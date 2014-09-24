@@ -1,0 +1,37 @@
+SPK Out
+"DAC1 L Mux" "IF1 DAC"
+"DAC1 R Mux" "IF1 DAC"
+"DAC1 MIXL DAC1 Switch" 1
+"DAC1 MIXR DAC1 Switch" 1
+"Stereo DAC MIXL DAC L1 Switch" 1
+"Stereo DAC MIXL "DAC R1 Switch" 1
+"SPK MIXL DAC L1 Switch" 1
+"SPKVOL L Switch" 1
+"SPOL MIX SPKVOL L Switch" 1
+
+HP Out
+"DAC L2 Mux" "IF1 DAC"
+"DAC R2 Mux" "IF1 DAC"
+"Mono DAC MIXL DAC L2 Switch" 1
+"Mono DAC MIXR DAC R2 Switch" 1
+"HPOVOL MIXL DAC2 Switch" 1
+"HPOVOL MIXR DAC2 Switch" 1
+"HPOVOL L Switch" 1
+"HPOVOL R Switch" 1
+"HPO MIX HPVOL Switch" 1
+
+Main Mic
+"RECMIXL BST2 Switch" 1
+"RECMIXR BST2 Switch" 1
+"Stereo1 ADC L1 Mux" "ADC"
+"Stereo1 ADC R1 Mux" "ADC"
+"Sto1 ADC MIXL ADC1 Switch" 1
+"Sto1 ADC MIXR ADC1 Switch" 1
+
+Main Mic
+"RECMIXL BST1 Switch" 1
+"RECMIXR BST1 Switch" 1
+"Stereo1 ADC L1 Mux" "ADC"
+"Stereo1 ADC R1 Mux" "ADC"
+"Sto1 ADC MIXL ADC1 Switch" 1
+"Sto1 ADC MIXR ADC1 Switch" 1
