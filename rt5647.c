@@ -68,8 +68,7 @@ static struct rt5647_init_reg init_list[] = {
 	/* playback */
 	{ RT5647_CHARGE_PUMP	, 0x0e06 },
 	{ RT5647_DAC_CTRL	, 0x0011 },
-	{ RT5647_STO_DAC_MIXER	, 0x1616 },/* Dig inf 1 -> Sto DAC mixer -> DACL */
-	{ RT5647_MONO_DAC_MIXER	, 0x4444 },
+	{ RT5647_STO_DAC_MIXER	, 0x7676 },
 	{ RT5647_OUTMIXL_CTRL3	, 0x01fe },/* DACL1 -> OUTMIXL */
 	{ RT5647_OUTMIXR_CTRL3	, 0x01fe },/* DACR1 -> OUTMIXR */
 	{ RT5647_LOUT_MIXER	, 0xc000 },
