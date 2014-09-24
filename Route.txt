@@ -28,7 +28,7 @@ Main Mic
 "Sto1 ADC MIXL ADC1 Switch" 1
 "Sto1 ADC MIXR ADC1 Switch" 1
 
-Main Mic
+Headset Mic
 "RECMIXL BST1 Switch" 1
 "RECMIXR BST1 Switch" 1
 "Stereo1 ADC L1 Mux" "ADC"
