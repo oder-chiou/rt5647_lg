@@ -64,7 +64,7 @@ static struct rt5647_init_reg init_list[] = {
 	{ RT5647_A_JD_CTRL1	, 0x0202 },/* for combo jack 1.8v */
 #endif
 	{ RT5647_GEN_CTRL2	, 0x0028 },
-	{ RT5647_ASRC_4		, 0x0100 }, /* I2S2 tracking source = LRCK2 */
+	{ RT5647_ASRC_4		, 0x0000 },
 	/* playback */
 	{ RT5647_CHARGE_PUMP	, 0x0e06 },
 	{ RT5647_DAC_CTRL	, 0x0011 },
@@ -117,7 +117,9 @@ static struct rt5647_init_reg init_list[] = {
 	{ RT5647_MICBIAS	, 0x0008 },
 	{ RT5647_GEN_CTRL3	, 0x1080 },
 #endif
-        { RT5647_CJ_CTRL3	, 0xc000 },
+	{ RT5647_CJ_CTRL1	, 0x0022 },
+	{ RT5647_CJ_CTRL2	, 0x00a7 },
+	{ RT5647_CJ_CTRL3	, 0x4000 },
 };
 #define RT5647_INIT_REG_LEN ARRAY_SIZE(init_list)
 
@@ -789,8 +791,8 @@ void rt5647_enable_push_button_irq2(struct snd_soc_codec *codec, bool on)
 		rt5647->push_button_en = true;
 		snd_soc_update_bits(codec, RT5647_CJ_CTRL1, 0x0580, 0x0580);
 		snd_soc_update_bits(codec, RT5647_CJ_CTRL2,
-			RT5647_CBJ_MN_JD | RT5647_CBJ_DETE,
-			RT5647_CBJ_MN_JD | RT5647_CBJ_DETE);
+			RT5647_CBJ_MN_JD | RT5647_CBJ_DET_MODE,
+			RT5647_CBJ_MN_JD | RT5647_CBJ_DET_MODE);
 		snd_soc_update_bits(codec, RT5647_PWR_ANLG1,
 			RT5647_PWR_MB | RT5647_PWR_BG,
 			RT5647_PWR_MB | RT5647_PWR_BG);
@@ -2322,8 +2324,8 @@ static int rt5647_asrc_event(struct snd_soc_dapm_widget *w,
 		snd_soc_update_bits(w->codec, RT5647_SIDETONE_CTRL,
 			RT5647_ST_SEL_MASK, 0x3 << RT5647_ST_SEL_SFT);
  		snd_soc_write(w->codec, RT5647_ASRC_1, 0xffff);
- 		snd_soc_write(w->codec, RT5647_ASRC_2, 0x1221);
-		snd_soc_write(w->codec, RT5647_ASRC_3, 0x0022);
+ 		snd_soc_write(w->codec, RT5647_ASRC_2, 0x1111);
+		snd_soc_write(w->codec, RT5647_ASRC_3, 0x0011);
 		snd_soc_update_bits(w->codec, RT5647_SIDETONE_CTRL,
 						RT5647_ST_SEL_MASK, tmp);
  		break;
