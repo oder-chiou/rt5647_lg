@@ -1003,9 +1003,9 @@ static int rt5647_jack_type_put(struct snd_kcontrol *kcontrol,
 #endif
 static const struct snd_kcontrol_new rt5647_snd_controls[] = {
 
-        /* For Camera main mic record */
-        SOC_DOUBLE("DMIC2 Latch Switch", RT5647_DMIC_CTRL2,
-        3, 2, 1, 0),
+	/* For Camera main mic record */
+	SOC_DOUBLE("DMIC2 Latch Switch", RT5647_DMIC_CTRL2,
+	3, 2, 1, 0),
 
 	/* Speaker Output Volume */
 	SOC_DOUBLE("Speaker Playback Switch", RT5647_SPK_VOL,
@@ -1179,6 +1179,8 @@ static const struct snd_kcontrol_new rt5647_snd_controls[] = {
 	SOC_ENUM_EXT("jack type", rt5647_jack_type_enum,
 		rt5647_jack_type_get, rt5647_jack_type_put),
 #endif
+	SOC_DOUBLE("DACL Mixer Gain Control L1 R1", RT5647_STO_DAC_MIXER,
+		RT5647_DAC_L1_STO_L_VOL_SFT, RT5647_DAC_R1_STO_L_VOL_SFT, 1, 0),
 };
 
 /**
