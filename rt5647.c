@@ -2045,7 +2045,7 @@ static int rt5647_hp_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-static int rt5647_spk_event(struct snd_soc_dapm_widget *w,
+static int rt5647_spk_l_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_codec *codec = w->codec;
@@ -2058,20 +2058,49 @@ static int rt5647_spk_event(struct snd_soc_dapm_widget *w,
 		rt5647_index_write(codec, 0x23, 0x0004);
 
 		snd_soc_update_bits(codec, RT5647_PWR_DIG1,
-			RT5647_PWR_CLS_D | RT5647_PWR_CLS_D_R | RT5647_PWR_CLS_D_L,
-			RT5647_PWR_CLS_D | RT5647_PWR_CLS_D_R | RT5647_PWR_CLS_D_L);
+			RT5647_PWR_CLS_D | RT5647_PWR_CLS_D_L,
+			RT5647_PWR_CLS_D | RT5647_PWR_CLS_D_L);
 		snd_soc_update_bits(codec, RT5647_GEN_CTRL3, 0x0200, 0x0200);
-		snd_soc_update_bits(codec, RT5647_SPK_VOL,
-			RT5647_L_MUTE | RT5647_R_MUTE, 0);
+		snd_soc_update_bits(codec, RT5647_SPK_VOL, RT5647_L_MUTE, 0);
 	break;
 
 	case SND_SOC_DAPM_PRE_PMD:
 		snd_soc_update_bits(codec, RT5647_SPK_VOL,
-			RT5647_L_MUTE | RT5647_R_MUTE,
-			RT5647_L_MUTE | RT5647_R_MUTE);
+			RT5647_L_MUTE, RT5647_L_MUTE);
 		snd_soc_update_bits(codec, RT5647_GEN_CTRL3, 0x0200, 0x0);
 		snd_soc_update_bits(codec, RT5647_PWR_DIG1,
-			RT5647_PWR_CLS_D | RT5647_PWR_CLS_D_R | RT5647_PWR_CLS_D_L, 0);
+			RT5647_PWR_CLS_D | RT5647_PWR_CLS_D_L, 0);
+		break;
+
+	default:
+		return 0;
+	}
+
+	return 0;
+}
+
+static int rt5647_spk_r_event(struct snd_soc_dapm_widget *w,
+	struct snd_kcontrol *kcontrol, int event)
+{
+	struct snd_soc_codec *codec = w->codec;
+
+	switch (event) {
+	case SND_SOC_DAPM_POST_PMU:
+		rt5647_index_write(codec, 0x1c, 0xfd20);
+		rt5647_index_write(codec, 0x20, 0x611f);
+		rt5647_index_write(codec, 0x21, 0x4040);
+		rt5647_index_write(codec, 0x23, 0x0004);
+
+		snd_soc_update_bits(codec, RT5647_PWR_DIG1,
+			RT5647_PWR_CLS_D_R, RT5647_PWR_CLS_D_R);
+		snd_soc_update_bits(codec, RT5647_SPK_VOL, RT5647_R_MUTE, 0);
+		break;
+
+	case SND_SOC_DAPM_PRE_PMD:
+		snd_soc_update_bits(codec, RT5647_SPK_VOL,
+			RT5647_R_MUTE, RT5647_R_MUTE);
+		snd_soc_update_bits(codec, RT5647_PWR_DIG1,
+			RT5647_PWR_CLS_D_R, 0);
 		break;
 
 	default:
@@ -2226,7 +2255,7 @@ static int rt5647_pdm1_r_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-static int rt5647_dac_l_event(struct snd_soc_dapm_widget *w,
+static int rt5647_eq_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
 	struct snd_soc_codec *codec = w->codec;
@@ -2234,33 +2263,11 @@ static int rt5647_dac_l_event(struct snd_soc_dapm_widget *w,
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
-		rt5647_update_eqmode(codec, EQ_CH_DACL, rt5647->eq_mode);
+		rt5647_update_eqmode(codec, EQ_CH_DAC, SPK);
 		break;
 
 	case SND_SOC_DAPM_PRE_PMD:
-		rt5647_update_eqmode(codec, EQ_CH_DACL, NORMAL);
-		break;
-
-	default:
-		return 0;
-	}
-
-	return 0;
-}
-
-static int rt5647_dac_r_event(struct snd_soc_dapm_widget *w,
-	struct snd_kcontrol *kcontrol, int event)
-{
-	struct snd_soc_codec *codec = w->codec;
-	struct rt5647_priv *rt5647 = snd_soc_codec_get_drvdata(codec);
-
-	switch (event) {
-	case SND_SOC_DAPM_POST_PMU:
-		rt5647_update_eqmode(codec, EQ_CH_DACR, rt5647->eq_mode);
-		break;
-
-	case SND_SOC_DAPM_PRE_PMD:
-		rt5647_update_eqmode(codec, EQ_CH_DACR, NORMAL);
+		rt5647_update_eqmode(codec, EQ_CH_DAC, NORMAL);
 		break;
 
 	default:
@@ -2317,37 +2324,40 @@ static int rt5647_hpvol_r_event(struct snd_soc_dapm_widget *w,
 }
 
 static int rt5647_asrc_event(struct snd_soc_dapm_widget *w,
-        struct snd_kcontrol *kcontrol, int event)
+	struct snd_kcontrol *kcontrol, int event)
 {
 	unsigned int tmp;
 
 	pr_debug("%s\n", __func__);
-        switch (event) {
- 	case SND_SOC_DAPM_POST_PMU:
+	switch (event) {
+	case SND_SOC_DAPM_POST_PMU:
 		tmp = snd_soc_read(w->codec, RT5647_SIDETONE_CTRL) &
 						RT5647_ST_SEL_MASK;
 		snd_soc_update_bits(w->codec, RT5647_SIDETONE_CTRL,
 			RT5647_ST_SEL_MASK, 0x3 << RT5647_ST_SEL_SFT);
- 		snd_soc_write(w->codec, RT5647_ASRC_1, 0xffff);
- 		snd_soc_write(w->codec, RT5647_ASRC_2, 0x1111);
+		snd_soc_write(w->codec, RT5647_ASRC_1, 0xffff);
+		snd_soc_write(w->codec, RT5647_ASRC_2, 0x1111);
 		snd_soc_write(w->codec, RT5647_ASRC_3, 0x0011);
 		snd_soc_update_bits(w->codec, RT5647_SIDETONE_CTRL,
 						RT5647_ST_SEL_MASK, tmp);
- 		break;
- 	case SND_SOC_DAPM_PRE_PMD:
- 		snd_soc_write(w->codec, RT5647_ASRC_1, 0);
- 		snd_soc_write(w->codec, RT5647_ASRC_2, 0);
+		break;
+	case SND_SOC_DAPM_PRE_PMD:
+		snd_soc_write(w->codec, RT5647_ASRC_1, 0);
+		snd_soc_write(w->codec, RT5647_ASRC_2, 0);
 		snd_soc_write(w->codec, RT5647_ASRC_3, 0);
- 	default:
- 		return 0;
- 	}
+	default:
+		return 0;
+	}
 
-        return 0;
+	return 0;
 }
 
 static const struct snd_soc_dapm_widget rt5647_dapm_widgets[] = {
 	SND_SOC_DAPM_SUPPLY_S("ASRC enable", 2, SND_SOC_NOPM, 0, 0,
 		rt5647_asrc_event, SND_SOC_DAPM_POST_PMU |
+		SND_SOC_DAPM_PRE_PMD),
+	SND_SOC_DAPM_SUPPLY_S("EQ DAC", 1, SND_SOC_NOPM, 0, 0,
+		rt5647_eq_dac_event, SND_SOC_DAPM_POST_PMU |
 		SND_SOC_DAPM_PRE_PMD),
 	SND_SOC_DAPM_SUPPLY("LDO2", RT5647_PWR_MIXER,
 		RT5647_PWR_LDO2_BIT, 0, NULL, 0),
@@ -2534,14 +2544,10 @@ static const struct snd_soc_dapm_widget rt5647_dapm_widgets[] = {
 
 	/* Output Side */
 	/* DAC mixer before sound effect  */
-	SND_SOC_DAPM_MIXER_E("DAC1 MIXL", SND_SOC_NOPM, 0, 0,
-		rt5647_dac_l_mix, ARRAY_SIZE(rt5647_dac_l_mix),
-		rt5647_dac_l_event, SND_SOC_DAPM_PRE_PMD |
-		SND_SOC_DAPM_POST_PMU),
-	SND_SOC_DAPM_MIXER_E("DAC1 MIXR", SND_SOC_NOPM, 0, 0,
-		rt5647_dac_r_mix, ARRAY_SIZE(rt5647_dac_r_mix),
-		rt5647_dac_r_event, SND_SOC_DAPM_PRE_PMD |
-		SND_SOC_DAPM_POST_PMU),
+	SND_SOC_DAPM_MIXER("DAC1 MIXL", SND_SOC_NOPM, 0, 0,
+		rt5647_dac_l_mix, ARRAY_SIZE(rt5647_dac_l_mix)),
+	SND_SOC_DAPM_MIXER("DAC1 MIXR", SND_SOC_NOPM, 0, 0,
+		rt5647_dac_r_mix, ARRAY_SIZE(rt5647_dac_r_mix)),
 	SND_SOC_DAPM_PGA("DAC MIX", SND_SOC_NOPM, 0, 0, NULL, 0),
 
 	/* DAC2 channel Mux */
@@ -2658,10 +2664,12 @@ static const struct snd_soc_dapm_widget rt5647_dapm_widgets[] = {
 	SND_SOC_DAPM_PGA_S("Mono amp", 1, RT5647_PWR_ANLG1,
 		RT5647_PWR_MA_BIT, 0, rt5647_mono_event,
 		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMU),
-	SND_SOC_DAPM_PGA_S("SPK amp", 2, SND_SOC_NOPM,
-		0, 0, rt5647_spk_event,
+	SND_SOC_DAPM_PGA_S("SPK L amp", 2, SND_SOC_NOPM,
+		0, 0, rt5647_spk_l_event,
 		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMU),
-
+	SND_SOC_DAPM_PGA_S("SPK R amp", 2, SND_SOC_NOPM,
+		0, 0, rt5647_spk_r_event,
+		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMU),
 	/* PDM */
 	SND_SOC_DAPM_SUPPLY("PDM1 Power", RT5647_PWR_DIG2,
 		RT5647_PWR_PDM1_BIT, 0, NULL, 0),
@@ -2691,9 +2699,11 @@ static const struct snd_soc_dapm_widget rt5647_dapm_widgets[] = {
 
 static const struct snd_soc_dapm_route rt5647_dapm_routes[] = {
 #ifdef USE_ASRC
-        {"I2S1", NULL, "ASRC enable"},
-        {"I2S2", NULL, "ASRC enable"},
+	{"I2S1", NULL, "ASRC enable"},
+	{"I2S2", NULL, "ASRC enable"},
 #endif
+	{ "SPK L amp", NULL, "EQ DAC" },
+	{ "SPK R amp", NULL, "EQ DAC" },
 
 	{ "IN1P", NULL, "LDO2" },
 	{ "IN2P", NULL, "LDO2" },
@@ -3041,10 +3051,10 @@ static const struct snd_soc_dapm_route rt5647_dapm_routes[] = {
 	{ "PDM1L", NULL, "PDM L" },
 	{ "PDM1R", NULL, "PDM R" },
 
-	{ "SPK amp", NULL, "SPOL MIX" },
-	{ "SPK amp", NULL, "SPOR MIX" },
-	{ "SPOL", NULL, "SPK amp" },
-	{ "SPOR", NULL, "SPK amp" },
+	{ "SPK L amp", NULL, "SPOL MIX" },
+	{ "SPK R amp", NULL, "SPOR MIX" },
+	{ "SPOL", NULL, "SPK L amp" },
+	{ "SPOR", NULL, "SPK R amp" },
 };
 
 static int get_clk_info(int sclk, int rate)
