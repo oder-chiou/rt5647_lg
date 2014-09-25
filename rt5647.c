@@ -40,8 +40,8 @@
 /* #define USE_INT_CLK */
 /* #define JD1_FUNC */
 /* #define ALC_DRC_FUNC */
-/* #define USE_ASRC */
-/* #define USE_TDM */
+#define USE_ASRC 1
+#define USE_TDM 1
 
 #define VERSION "0.1.2 alsa 1.0.25"
 
@@ -50,7 +50,8 @@ struct rt5647_init_reg {
 	u16 val;
 };
 
-static struct snd_soc_codec *rt5647_codec;
+static bool irq2_on = false;
+static struct snd_soc_codec *rt5647_codec = NULL;
 static struct timer_list jd_check_timer;
 struct work_struct jd_check_work;
 struct snd_soc_jack *rt5647_jack;
@@ -782,11 +783,21 @@ void rt5647_i2s2_func_switch(struct snd_soc_codec *codec, bool enable)
 }
 EXPORT_SYMBOL(rt5647_i2s2_func_switch);
 
-void rt5647_enable_push_button_irq2(struct snd_soc_codec *codec, bool on)
+
+void rt5647_enable_push_button_irq2(bool on)
 {
-	struct rt5647_priv *rt5647 = snd_soc_codec_get_drvdata(codec);
+	printk("rt5647_enable_push_button_irq2.\n");
+	struct snd_soc_codec *codec = rt5647_codec;
+	struct rt5647_priv *rt5647;
+	if (codec == NULL) {
+		printk("Cannot enable push button since codec driver have not loaded yet.\n");
+		return;
+	}
+
+	rt5647 = snd_soc_codec_get_drvdata(codec);
 
 	if (on) {
+		printk("Enable irq2 for pushing button.\n");
 		rt5647->push_button_en = true;
 		snd_soc_update_bits(codec, RT5647_CJ_CTRL1, 0x0580, 0x0580);
 		snd_soc_update_bits(codec, RT5647_CJ_CTRL2,
@@ -806,7 +817,11 @@ void rt5647_enable_push_button_irq2(struct snd_soc_codec *codec, bool on)
 		snd_soc_update_bits(codec, RT5647_INT_IRQ_ST, 0x8, 0x8);
 		snd_soc_update_bits(codec, RT5647_GPIO_CTRL1,
 			RT5647_GP1_PIN_MASK, RT5647_GP1_PIN_IRQ);
+		snd_soc_update_bits(codec, RT5647_IL_CMD, 0xff80, 0xff80);
+		irq2_on = true;
 	} else {
+		printk("Disable irq2 for pushing button.\n");
+
 		rt5647->push_button_en = false;
 		if (codec->dapm.bias_level == SND_SOC_BIAS_OFF) {
 			snd_soc_update_bits(codec, RT5647_PWR_ANLG1,
@@ -818,25 +833,53 @@ void rt5647_enable_push_button_irq2(struct snd_soc_codec *codec, bool on)
 			snd_soc_update_bits(codec, RT5647_PWR_VOL,
 				RT5647_PWR_MIC_DET, 0);
 		}
+		snd_soc_update_bits(codec, RT5647_IL_CMD, 0xff80, 0xff80);
 	}
 }
 EXPORT_SYMBOL(rt5647_enable_push_button_irq2);
 
-int rt5647_button_detect2(struct snd_soc_codec *codec)
+int rt5647_button_detect2(void)
 {
+	struct snd_soc_codec *codec = rt5647_codec;
 	int btn_type, val;
 
-	if (!(snd_soc_read(codec, RT5647_INT_IRQ_ST) & 0x4))
-		return 0;
+	if (codec == NULL)
+	    return 0;
+
+	if (!irq2_on) {
+		printk("Call enable_push_button_irq2() since jack was inserted while boot-up.\n");
+		rt5647_enable_push_button_irq2(true);
+	}
+
+	for(val = 0; val < 40; val++) {
+		if (snd_soc_read(codec, RT5647_INT_IRQ_ST) & 0x4)
+		{
+			printk("Delay: %dms\n", val*5);
+			break;
+		}
+		msleep(5);
+	}
 
 	val = snd_soc_read(codec, RT5647_IL_CMD);
+	printk("Value: 0x%x\n", val);
+
 	btn_type = val & 0xff80;
-	pr_debug("btn_type=0x%x\n", btn_type);
-	snd_soc_write(codec, RT5647_IL_CMD, val);
+	printk("btn_type=0x%x\n", btn_type);
+	snd_soc_update_bits(codec, RT5647_IL_CMD, 0xff80, 0xff80);
 
 	return btn_type;
 }
 EXPORT_SYMBOL(rt5647_button_detect2);
+
+void rt5647_button_release(void)
+{
+	struct snd_soc_codec *codec = rt5647_codec;
+	if ((codec == NULL) || !irq2_on)
+	    return;
+
+	snd_soc_update_bits(codec, RT5647_IL_CMD, 0xff80, 0xff80);
+}
+EXPORT_SYMBOL(rt5647_button_release);
 
 static const DECLARE_TLV_DB_SCALE(out_vol_tlv, -4650, 150, 0);
 static const DECLARE_TLV_DB_SCALE(dac_vol_tlv, -65625, 375, 0);
@@ -2356,10 +2399,10 @@ static const struct snd_soc_dapm_widget rt5647_dapm_widgets[] = {
 
 	/* Input Side */
 	/* micbias */
-	SND_SOC_DAPM_MICBIAS("micbias1", RT5647_PWR_ANLG2,
-			RT5647_PWR_MB1_BIT, 0),
-	SND_SOC_DAPM_MICBIAS("micbias2", RT5647_PWR_ANLG2,
-			RT5647_PWR_MB2_BIT, 0),
+	SND_SOC_DAPM_SUPPLY("micbias1", RT5647_PWR_ANLG2,
+			RT5647_PWR_MB1_BIT, 0, NULL, 0),
+	SND_SOC_DAPM_SUPPLY("micbias2", RT5647_PWR_ANLG2,
+			RT5647_PWR_MB2_BIT, 0, NULL, 0),
 	/* Input Lines */
 	SND_SOC_DAPM_INPUT("DMIC L1"),
 	SND_SOC_DAPM_INPUT("DMIC R1"),
@@ -3074,7 +3117,7 @@ static int rt5647_hw_params(struct snd_pcm_substream *substream,
 	unsigned int val_len = 0, val_clk, mask_clk;
 	int pre_div, bclk_ms, frame_size;
 
-	rt5647->lrck[dai->id] = params_rate(params);
+	rt5647->lrck[dai->id] = snd_pcm_rate_bit_to_rate(params_rate(params));
 	pre_div = get_clk_info(rt5647->sysclk, rt5647->lrck[dai->id]);
 	if (pre_div < 0) {
 		dev_err(codec->dev, "Unsupported clock setting\n");

@@ -2302,7 +2302,8 @@ void rt5647_enable_push_button_irq(struct snd_soc_codec *codec,
 int rt5647_button_detect(struct snd_soc_codec *codec);
 int rt5647_check_irq_event(struct snd_soc_codec *codec);
 void rt5647_i2s2_func_switch(struct snd_soc_codec *codec, bool enable);
-void rt5647_enable_push_button_irq2(struct snd_soc_codec *codec, bool on);
-int rt5647_button_detect2(struct snd_soc_codec *codec);
+void rt5647_enable_push_button_irq2(bool on);
+int rt5647_button_detect2(void);
+void rt5647_button_release(void);
 
 #endif /* __RT5647_H__ */
