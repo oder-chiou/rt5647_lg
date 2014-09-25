@@ -61,54 +61,14 @@ static struct rt5647_init_reg init_list[] = {
 	{ RT5647_IL_CMD2	, 0x0010 }, /* set Inline Command Window */
 	{ RT5647_PRIV_INDEX	, 0x003d },
 	{ RT5647_PRIV_DATA	, 0x3600 },
-#if 0
-	{ RT5647_A_JD_CTRL1	, 0x0202 },/* for combo jack 1.8v */
-#endif
 	{ RT5647_GEN_CTRL2	, 0x0028 },
 	{ RT5647_ASRC_4		, 0x0000 },
 	/* playback */
 	{ RT5647_CHARGE_PUMP	, 0x0e06 },
-	{ RT5647_DAC_CTRL	, 0x0011 },
-	{ RT5647_STO_DAC_MIXER	, 0x7676 },
-	{ RT5647_OUTMIXL_CTRL3	, 0x01fe },/* DACL1 -> OUTMIXL */
-	{ RT5647_OUTMIXR_CTRL3	, 0x01fe },/* DACR1 -> OUTMIXR */
-	{ RT5647_LOUT_MIXER	, 0xc000 },
+	{ RT5647_STO_DAC_MIXER	, 0x7756 },
 	{ RT5647_LOUT1		, 0x8888 },
-#if 0 /* HP direct path */
-	{ RT5647_HPO_MIXER	, 0x2000 },/* DAC1 -> HPOLMIX */
-#else /* HP via mixer path */
-	{ RT5647_HPOMIXL_CTRL	, 0x001c },/* DAC1/2 -> HPOVOL */
-	{ RT5647_HPOMIXR_CTRL	, 0x001c },/* DAC1/2 -> HPOVOL */
-	{ RT5647_HPO_MIXER	, 0x4000 },/* HPOVOL -> HPOLMIX */
-#endif
-	{ RT5647_HP_VOL		, 0x8888 },/* OUTMIX -> HPVOL */
-#if 0 /* SPK direct path */
-	{ RT5647_SPO_MIXER	, 0x7803 },/* DAC1 -> SPO */
-#else /* SPK via mixer path */
-	{ RT5647_SPK_L_MIXER	, 0x0038 },/* DAC1/2 -> SPKVOL */
-	{ RT5647_SPK_R_MIXER	, 0x0038 },/* DAC1/2 -> SPKVOL */
-	{ RT5647_SPO_MIXER	, 0xd806 },/* SPKVOL -> SPO */
-#endif
-	{ RT5647_SPK_VOL	, 0x8888 },
 	/* record */
-	{ RT5647_IN2		, 0x0200 },/* IN2 boost 24db and signal ended mode */
-	{ RT5647_REC_L2_MIXER	, 0x007d },/* Mic1 -> RECMIXL */
-	{ RT5647_REC_R2_MIXER	, 0x007d },/* Mic1 -> RECMIXR */
-#if 1 /* DMIC1 */
-	{ RT5647_STO1_ADC_MIXER	, 0x5840 },
-	{ RT5647_MONO_ADC_MIXER	, 0x5858 },
-#endif
-#if 0 /* DMIC2 */
-	{ RT5647_STO1_ADC_MIXER	, 0x5940 },
-	{ RT5647_MONO_ADC_MIXER	, 0x5858 },
-#endif
-#if 0 /* AMIC */
-	{ RT5647_STO1_ADC_MIXER	, 0x3020 },/* ADC -> Sto ADC mixer */
-	{ RT5647_MONO_ADC_MIXER	, 0x3838 },
-#endif
-	{ RT5647_DMIC_CTRL1	, 0x1806 },
-	/* { RT5647_STO1_ADC_DIG_VOL, 0xafaf }, */ /* Mute STO1 ADC for depop, Digital Input Gain */
-	{ RT5647_STO1_ADC_DIG_VOL, 0xd7d7 },/* Mute STO1 ADC for depop, Digital Input Gain */
+	{ RT5647_STO1_ADC_DIG_VOL, 0xafaf },
 	{ RT5647_GPIO_CTRL1	, 0xc000 },
 	{ RT5647_GPIO_CTRL2	, 0x0004 },
 #ifdef JD1_FUNC
@@ -2745,8 +2705,6 @@ static const struct snd_soc_dapm_route rt5647_dapm_routes[] = {
 
 	{ "BST1", NULL, "IN1P" },
 	{ "BST1", NULL, "IN1N" },
-	{ "BST1", NULL, "JD Power" },
-	{ "BST1", NULL, "Mic Det Power" },
 	{ "BST2", NULL, "IN2P" },
 	{ "BST2", NULL, "IN2N" },
 	{ "BST3", NULL, "IN3P" },
@@ -3066,9 +3024,6 @@ static const struct snd_soc_dapm_route rt5647_dapm_routes[] = {
 	{ "PDM1 R Mux", NULL, "PDM1 Power" },
 
 	{ "HP amp", NULL, "HPO MIX" },
-	{ "HP amp", NULL, "JD Power" },
-	{ "HP amp", NULL, "Mic Det Power" },
-	{ "HP amp", NULL, "LDO2" },
 	{ "HPOL", NULL, "HP amp" },
 	{ "HPOR", NULL, "HP amp" },
 
