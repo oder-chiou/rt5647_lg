@@ -69,6 +69,7 @@ static struct rt5647_init_reg init_list[] = {
 	{ RT5647_LOUT1		, 0x8888 },
 	/* record */
 	{ RT5647_STO1_ADC_DIG_VOL, 0xafaf },
+	{ RT5647_MONO_ADC_DIG_VOL, 0xafaf },
 	{ RT5647_GPIO_CTRL1	, 0xc000 },
 	{ RT5647_GPIO_CTRL2	, 0x0004 },
 #ifdef JD1_FUNC
