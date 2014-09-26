@@ -3061,9 +3061,6 @@ static int get_clk_info(int sclk, int rate)
 {
 	int i, pd[] = {1, 2, 3, 4, 6, 8, 12, 16};
 
-#ifdef USE_ASRC
-	return 0;
-#endif
 	if (sclk <= 0 || rate <= 0)
 		return -EINVAL;
 
