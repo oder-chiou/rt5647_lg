@@ -2163,6 +2163,29 @@ static int rt5647_lout_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
+static int rt5647_bst1_event(struct snd_soc_dapm_widget *w,
+	struct snd_kcontrol *kcontrol, int event)
+{
+	struct snd_soc_codec *codec = w->codec;
+
+	switch (event) {
+	case SND_SOC_DAPM_POST_PMU:
+		snd_soc_update_bits(codec, RT5647_GEN_CTRL3,
+			0x0100, 0x0100);
+		break;
+
+	case SND_SOC_DAPM_PRE_PMD:
+		snd_soc_update_bits(codec, RT5647_GEN_CTRL3,
+			0x0100, 0);
+		break;
+
+	default:
+		return 0;
+	}
+
+	return 0;
+}
+
 static int rt5647_bst2_event(struct snd_soc_dapm_widget *w,
 	struct snd_kcontrol *kcontrol, int event)
 {
@@ -2399,8 +2422,9 @@ static const struct snd_soc_dapm_widget rt5647_dapm_widgets[] = {
 	SND_SOC_DAPM_SUPPLY("DMIC2 Power", RT5647_DMIC_CTRL1,
 		RT5647_DMIC_2_EN_SFT, 0, NULL, 0),
 	/* Boost */
-	SND_SOC_DAPM_PGA("BST1", RT5647_PWR_ANLG2,
-		RT5647_PWR_BST1_BIT, 0, NULL, 0),
+	SND_SOC_DAPM_PGA_E("BST1", RT5647_PWR_ANLG2,
+		RT5647_PWR_BST1_BIT, 0, NULL, 0, rt5647_bst1_event,
+		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMU),
 	SND_SOC_DAPM_PGA_E("BST2", RT5647_PWR_ANLG2,
 		RT5647_PWR_BST2_BIT, 0, NULL, 0, rt5647_bst2_event,
 		SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMU),
