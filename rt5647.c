@@ -81,6 +81,7 @@ static struct rt5647_init_reg init_list[] = {
 	{ RT5647_CJ_CTRL1	, 0x0022 },
 	{ RT5647_CJ_CTRL2	, 0x00a7 },
 	{ RT5647_CJ_CTRL3	, 0x4000 },
+	{ RT5647_BASE_BACK	, 0x0017 },
 };
 #define RT5647_INIT_REG_LEN ARRAY_SIZE(init_list)
 
@@ -200,7 +201,7 @@ static const u16 rt5647_reg[RT5647_VENDOR_ID2 + 1] = {
 	[RT5647_ALC_CTRL_4] = 0x4000,
 	[RT5647_INT_IRQ_ST] = 0x0180,
 	[RT5647_GPIO_CTRL4] = 0x2000,
-	[RT5647_BASE_BACK] = 0x1813,
+	[RT5647_BASE_BACK] = 0x0013,
 	[RT5647_MP3_PLUS1] = 0x0690,
 	[RT5647_MP3_PLUS2] = 0x1c17,
 	[RT5647_ADJ_HPF1] = 0xb320,
