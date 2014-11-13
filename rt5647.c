@@ -42,6 +42,7 @@
 /* #define ALC_DRC_FUNC */
 #define USE_ASRC 1
 #define USE_TDM 1
+/* #define GPIO_LDO1_EN 158 */
 
 #define VERSION "0.1.2 alsa 1.0.25"
 
@@ -3918,11 +3919,18 @@ static int rt5647_remove(struct snd_soc_codec *codec)
 static int rt5647_suspend(struct snd_soc_codec *codec)
 {
 	rt5647_set_bias_level(codec, SND_SOC_BIAS_OFF);
+#ifdef GPIO_LDO1_EN
+	gpio_direction_output(GPIO_LDO1_EN, 0);
+#endif
 	return 0;
 }
 
 static int rt5647_resume(struct snd_soc_codec *codec)
 {
+#ifdef GPIO_LDO1_EN
+	gpio_direction_output(GPIO_LDO1_EN, 1);
+	msleep(350);
+#endif
 	codec->cache_only = false;
 	codec->cache_sync = 1;
 	snd_soc_cache_sync(codec);
